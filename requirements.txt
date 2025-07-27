@@ -35,7 +35,7 @@ pyee==12.1.1
 pytest==8.3.4
 pytest-cov==6.0.0
 pytest-cover==3.0.0
-pytest-coverage=0.0
+pytest-coverage==0.0
 python-dotenv==1.0.1
 python-jose==3.3.0
 python-multipart==0.0.20
@@ -48,6 +48,6 @@ starlette==0.45.3
 tenacity==9.0.0
 tomli==2.2.1
 typing_extensions==4.12.2
-txdata=2025.1
+tzdata==2025.1
 urllib3==2.3.0
 uvicorn==0.34.0
