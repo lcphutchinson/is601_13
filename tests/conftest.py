@@ -188,9 +188,6 @@ def wait_for_server(url: str, timeout: int = 30) -> bool:
                 return True
         except requests.exceptions.ConnectionError:
             pass
-        logger.warning("Server delayed with response "
-            f"{response.status_code}: {response.reason}"
-            )
         time.sleep(1)
     return False
 
