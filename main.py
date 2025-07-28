@@ -6,6 +6,7 @@ from datetime import datetime, timezone, timedelta
 from fastapi import Body, FastAPI, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import List
@@ -17,12 +18,13 @@ from app.models.user import User
 from app.schemas.user import AuthToken, UserRecord
 from app.schemas.user_form import UserCreate, UserLoginForm
 
+# ----------------------------------------
+# Setup
+# ----------------------------------------
 
-# Logger Setup
 logs.basicConfig(level=logs.INFO)
 logger = logs.getLogger(__name__)
 
-# Startup Config
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing Tables")
@@ -37,16 +39,27 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
-
-# ----------------------------------------
-# Root Endpoint
-# ----------------------------------------
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-@app.get('/', response_class=HTMLResponse, tags=["web"])
+# ----------------------------------------
+# Page Endpoints
+# ----------------------------------------
+@app.get("/", response_class=HTMLResponse, tags=["web"])
 def get_homepage(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/login", response_class=HTMLResponse, tags=["web"])
+def get_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.get("/register", response_class=HTMLResponse, tags=["web"])
+def get_register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+@app.get("/dashboard", response_class=HTMLResponse, tags=["web"])
+def get_dashboard_page(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request})
 
 # ----------------------------------------
 # Health Endpoint
