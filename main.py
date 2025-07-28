@@ -189,7 +189,7 @@ def get_calculation(
         calc_uuid = UUID(calc_id)
     except ValueError:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid calculation id format"
         )
     calculation = db.query(calc.Calculation).filter(
@@ -198,7 +198,7 @@ def get_calculation(
     ).first()
     if not calculation:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             details="Calculation not found."
         )
     return calculation
@@ -218,7 +218,7 @@ def update_calculation(
         calc_uuid = UUID(calc_id)
     except ValueError:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid calculation id format"
         )
     calculation = db.query(calcs.Calculation).filter(
@@ -227,7 +227,7 @@ def update_calculation(
     ).first()
     if not calculation:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Calculation not found"
         )
     if calculation_update.inputs:
@@ -251,7 +251,7 @@ def delete_calculation(
         calc_uuid = UUID(calc_id)
     except ValueError:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid calculation id format"
         )
     calculation = db.query(calcs.Calculation).filter(
@@ -260,7 +260,7 @@ def delete_calculation(
     ).first()
     if not calculation:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Calculation not found"
         )
     db.delete(calculation)

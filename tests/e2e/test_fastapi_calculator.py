@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from app.models.calculation import Calculation
+from app.models.user import User
 
 # --------------------------------------------------------------
 # E2E Fixtures
@@ -17,6 +18,7 @@ def base_url(fastapi_server: str) -> str:
 
 @pytest.fixture
 def registered_test_user(base_url: str, db_session):
+    """Registers and yeilds a user for user-dependent operations"""
     url = f"{base_url}/auth/register"
     user_data = {
         "first_name": "Jane",
@@ -32,19 +34,37 @@ def registered_test_user(base_url: str, db_session):
     try:
         yield response.json()
     finally:
-        pass
+        user = db_session.query(User).filter(
+            User.username == user_data.get("username")
+        ).first()
+        db_session.delete(user)
+        db_session.commit()
 
+@pytest.fixture
+def user_auth(base_url: str, registered_test_user):
+    login_url = f"{base_url}/auth/login"
+
+    payload = {
+        "username": registered_test_user["username"],
+        "password": "SecurePass123"
+    }
+    response = requests.post(login_url, json=payload)
+    assert response.status_code == 200, \
+        "user_auth fixture failed to log in"
+    return response.json()
 
 # --------------------------------------------------------------
 # Health and Auth Endpoint Tests
 # --------------------------------------------------------------
 def test_health_endpoint(base_url: str):
+    """Verifies health endpoint connectivity"""
     url = f"{base_url}/health"
     response = requests.get(url)
     assert response.status_code == 200, f"Unexpected status code {response.status_code}"
     assert response.json() == {"status": "ok"}, "Nonstandard response data from /health"
 
 def test_user_registration(registered_test_user):
+    """Tests user registration for valid field insertion"""
     data = registered_test_user
     for key in [
         "id",
@@ -63,6 +83,7 @@ def test_user_registration(registered_test_user):
     assert data["is_verified"] == False
 
 def test_user_login(base_url: str, registered_test_user):
+    """Tests login process for appropriate token return"""
     login_url = f"{base_url}/auth/login"
 
     payload = {
@@ -119,3 +140,36 @@ def test_user_login(base_url: str, registered_test_user):
     assert user_data["last_name"] == registered_test_user["last_name"]
     assert user_data["is_active"]
 
+# --------------------------------------------------------------
+# Calculations Endpoints
+# --------------------------------------------------------------
+@pytest.mark.parametrize(
+    "type", [
+        ("Addition"),
+        ("Subtraction"),
+        ("Multiplication"),
+        ("Division"),
+        ("Modulus")
+    ]
+)
+def test_create_calculations(base_url: str, user_auth, db_session, type):
+    user_data = user_auth["user"]
+    user = db_session.query(User).filter(
+        User.username == user_data.get("username")
+    ).first()
+
+    access_token = user_auth["access_token"]
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"{base_url}/calculations"
+    payload = {
+        "type": type,
+        "inputs": [8, 4],
+        "user_id": str(user.id)
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+    assert response.status_code == 201, (
+        f"{type} Calculation failed with message: {response.text}"
+    )
+    data = response.json()
+    
