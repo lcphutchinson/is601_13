@@ -15,6 +15,8 @@ I got this error twice while implementing module 13. First, I would receive this
 
 The second time was less frustrating, and something I noticed when attempting to manually recreate certain test scenarios like bad passwords. At first, I thought incorrect passwords were causing 422 errors, but I later found that the structure of our Schema objects was creating cases where the bounds of the schema were violated by inputs coming in from the front-end and were throwing errors that couldn't be checked on the backend as they were wrapped up in the routing pipeline (for example, if a login form had too short a password in it, that data would be passed to main.py where the our decorated login route would attempt to put the data in a LoginForm schema object, triggering a Validation Error that couldn't be caught in the route function code, which then triggered a 422) After discovering this, I have updated many of the "forms" schema that structure incoming code from the frontend to be more accepting, relying on the front-end validation to provide appropriate boundaries for inputs. As of this writing, I believe I still need to put maximum length boundaries on some of those inputs on the front end, but will add those before the final.
 
+Alternatively, we can redesign the endpoints to take more "raw" data and then pipe that data into the schema constructor in a Try block--that way we can catch and respond appropriately to errors that aren't checked on the front end.
+
 ### Running the Test Suite
 
 After cloning the repo to your local machine, create and enter virtual environment with the venv module
