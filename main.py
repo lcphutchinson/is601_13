@@ -10,11 +10,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID
 
 import app.schemas.calculation as calcs
 from app.auth.dependencies import get_current_active_user
 from app.database_client import DatabaseClient
 from app.models.user import User
+from app.models.calculation import Calculation
 from app.schemas.user import AuthToken, UserRecord
 from app.schemas.user_form import UserCreate, UserLoginForm
 
@@ -140,12 +142,12 @@ def login_form(
     tags=['calculations'],
 )
 def create_calculation(
-    calc_data: calcs.CalculationForm,
-    current_user = Depends(get_current_active_user),
-    db: Session = Depends(DatabaseClient().get_session)):
+        calc_data: calcs.CalculationForm,
+        current_user = Depends(get_current_active_user),
+        db: Session = Depends(DatabaseClient().get_session)):
     """Creates and inserts a Calculation record"""
     try:
-        new_calculation = calcs.Calculation.create(
+        new_calculation = Calculation.create(
             calc_type=calc_data.type,
             user_id=current_user.id,
             inputs=calc_data.inputs,
@@ -169,10 +171,10 @@ def create_calculation(
     tags=["calculations"],
 )
 def list_calculations(
-    current_user = Depends(get_current_active_user),
-    db: Session = Depends(DatabaseClient().get_session)):
-    calculations = db.query(calcs.Calculation).filter(
-        calcs.Calculation.user_id == current_user.id).all()
+        current_user = Depends(get_current_active_user),
+        db: Session = Depends(DatabaseClient().get_session)):
+    calculations = db.query(Calculation).filter(
+        Calculation.user_id == current_user.id).all()
     return calculations
 
 # READ ONE
@@ -182,9 +184,9 @@ def list_calculations(
     tags=["calculations"]
 )
 def get_calculation(
-    calc_id: str,
-    current_user = Depends(get_current_active_user),
-    db: Session = Depends(DatabaseClient().get_session)):
+        calc_id: str,
+        current_user = Depends(get_current_active_user),
+        db: Session = Depends(DatabaseClient().get_session)):
     try:
         calc_uuid = UUID(calc_id)
     except ValueError:
@@ -192,9 +194,9 @@ def get_calculation(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid calculation id format"
         )
-    calculation = db.query(calc.Calculation).filter(
-        calcs.Calculation.id == calc_uuid,
-        calcs.Calculation.user_id == current_user_id
+    calculation = db.query(Calculation).filter(
+        Calculation.id == calc_uuid,
+        Calculation.user_id == current_user_id
     ).first()
     if not calculation:
         raise HTTPException(
@@ -210,10 +212,10 @@ def get_calculation(
     tags=["calculations"]
 )
 def update_calculation(
-    calc_id: str,
-    calculation_update: calcs.CalculationUpdate,
-    current_user = Depends(get_current_active_user),
-    db: Session = Depends(DatabaseClient().get_session)):
+        calc_id: str,
+        calculation_update: calcs.CalculationUpdate,
+        current_user = Depends(get_current_active_user),
+        db: Session = Depends(DatabaseClient().get_session)):
     try:
         calc_uuid = UUID(calc_id)
     except ValueError:
@@ -221,9 +223,9 @@ def update_calculation(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid calculation id format"
         )
-    calculation = db.query(calcs.Calculation).filter(
-        calcs.Calculation.id == calc_uuid,
-        calcs.Calculation.user_id == current_user.id
+    calculation = db.query(Calculation).filter(
+        Calculation.id == calc_uuid,
+        Calculation.user_id == current_user.id
     ).first()
     if not calculation:
         raise HTTPException(
@@ -239,14 +241,14 @@ def update_calculation(
 
 # DELETE
 @app.delete(
-    "/calculation/{calc_id}",
+    "/calculations/{calc_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     tags=["calculations"]
 )
 def delete_calculation(
-    calc_id: str,
-    current_user = Depends(get_current_active_user),
-    db: Session = Depends(DatabaseClient().get_session)):
+        calc_id: str,
+        current_user = Depends(get_current_active_user),
+        db: Session = Depends(DatabaseClient().get_session)):
     try:
         calc_uuid = UUID(calc_id)
     except ValueError:
@@ -254,9 +256,9 @@ def delete_calculation(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid calculation id format"
         )
-    calculation = db.query(calcs.Calculation).filter(
-        calcs.Calculation.id == calc_uuid,
-        calcs.Calculation.user_id == current_user.id
+    calculation = db.query(Calculation).filter(
+        Calculation.id == calc_uuid,
+        Calculation.user_id == current_user.id
     ).first()
     if not calculation:
         raise HTTPException(

@@ -1,12 +1,17 @@
 """This module provides dependency functions for Authorization with fastapi"""
 
 from fastapi import Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from uuid import UUID
 
 from app.auth import oauth2_token_scheme
+from app.database_client import DatabaseClient
 from app.models.user import User
 from app.schemas.user import UserRecord
 
-def get_current_user(db, token:str = Depends(oauth2_token_scheme)) -> UserRecord:
+def get_current_user(
+        db: Session = Depends(DatabaseClient().get_session),
+        token:str = Depends(oauth2_token_scheme)) -> UserRecord:
     """
     Dependency to get current user from JWT token.
     
@@ -33,15 +38,24 @@ def get_current_user(db, token:str = Depends(oauth2_token_scheme)) -> UserRecord
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    user_id = User.verify_token(token)
-    if user_id is None:
+    token_data = User.verify_token(token)
+    if not token_data:
         raise credentials_exception
-
-    user = db.query(User).filter(User.id == user_id).first()
-    if user is None:
+    if isinstance(token_data, dict):
+        user_data = token_data.get("user")
+        if user_data:
+            return UserRecord.model_validate(user_data)
+        user_data = token_data.get("sub")
+        if user_data:
+            user = db.query(User).filter(User.id == user_data).first()
+            if user:
+                return UserRecord.model_validate(user)
         raise credentials_exception
-
-    return UserRecord.model_validate(user)
+    if isinstance(token_data, UUID):
+        user = db.query(User).filter(User.id == token_data).first()
+        if user:
+            return UserRecord.model_validate(user)
+        raise credentials_exception
 
 def get_current_active_user(
     current_user: UserRecord = Depends(get_current_user)
