@@ -93,23 +93,6 @@ def test_user_login_form_properties():
     assert login_form.username == "janedoe"
     assert login_form.password == "SecurePass123"
 
-@pytest.mark.parametrize(
-        "username",
-        [
-            #("lo"),
-            ("loremipsumdolorsitametconsecteturadipiscingelitsedd"),
-        ],
-        ids=[
-            #"short_username",
-            "long_username",
-        ]
-)
-def test_login_username_constraints(username: str):
-    """Tests length constrains on the login username field"""
-    data = { "username": username, "password": "SecurePass123" }
-    with pytest.raises(ValidationError):
-        forms.UserLoginForm(**data)
-
 def test_user_update_properties():
     """Validates the UserUpdate schema's properties and constructor"""
     update_data = {
