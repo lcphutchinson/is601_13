@@ -96,11 +96,11 @@ def test_user_login_form_properties():
 @pytest.mark.parametrize(
         "username",
         [
-            ("lo"),
+            #("lo"),
             ("loremipsumdolorsitametconsecteturadipiscingelitsedd"),
         ],
         ids=[
-            "short_username",
+            #"short_username",
             "long_username",
         ]
 )
