@@ -24,7 +24,7 @@ class UserForm(pyd.BaseModel):
         description="Email address"
     )
     username: str = pyd.Field(
-        min_length=3,
+        min_length=1,
         max_length=50,
         example="janedoe",
         description="Username"
@@ -34,7 +34,7 @@ class UserForm(pyd.BaseModel):
 class PasswordMixin(pyd.BaseModel):
     """Mixin for password validation"""
     password: str = pyd.Field(
-        min_length=8,
+        min_length=1,
         max_length=128,
         example="SecurePass123",
         description="Password"
@@ -56,19 +56,35 @@ class PasswordMixin(pyd.BaseModel):
             raise ValueError("Password must contain at least one digit")
         return values
 
-class UserLoginForm(PasswordMixin):
+class UserLoginForm(pyd.BaseModel):
     """User Login form schema with username/password"""
     username: str = pyd.Field(
         description="Username or email",
-        min_length=3,
+        min_length=1,
         max_length=50,
         example="janedoe",
+    )
+    password: str = pyd.Field(
+        ...,
+        description="Password",
+        min_length=1,
+        max_length=128,
+        example="SecurePass123"
+    )
+
+    model_config = pyd.ConfigDict(
+        json_schema_extra={
+            "example": {
+                "username": "janedoe",
+                "password": "SecurePass123"
+            }
+        }
     )
 
 class UserCreate(UserForm, PasswordMixin):
     """Formatted schema for User Create actions"""
     confirm_password: str = pyd.Field(
-            min_length=8,
+            min_length=1,
             max_length=128,
             example="SecurePass123",
             description="Confirm password"
@@ -98,7 +114,7 @@ class UserUpdate(pyd.BaseModel):
         description="Email address"
     )
     username: str = pyd.Field(
-        min_length=3,
+        min_length=1,
         max_length=50,
         example="janedoe",
         description="Username"
@@ -108,14 +124,14 @@ class PasswordUpdate(PasswordMixin):
     """Schema for User password updates"""
     current_password: str = pyd.Field(
         ...,
-        min_length=8,
+        min_length=1,
         max_length=128,
         example="OldPass123",
         description="Current password"
     )
     confirm_password: str = pyd.Field(
         ...,
-        min_length=8,
+        min_length=1,
         max_length=128,
         example="SecurePass123",
         description="Confirm password"

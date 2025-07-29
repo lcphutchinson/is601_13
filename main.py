@@ -107,7 +107,7 @@ def login_json(
     if not auth_result:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            details="Invalid username or password",
+            detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     db.commit()
@@ -201,7 +201,7 @@ def get_calculation(
     if not calculation:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            details="Calculation not found."
+            detail="Calculation not found."
         )
     return calculation
 

@@ -140,6 +140,20 @@ def test_user_login(base_url: str, registered_test_user):
     assert user_data["last_name"] == registered_test_user["last_name"]
     assert user_data["is_active"]
 
+def test_login_bad_password(base_url: str, registered_test_user):
+    """Tests error handling where an existing user provides an invalid password"""
+    login_url = f"{base_url}/auth/login"
+
+    payload = {
+        "username": registered_test_user["username"],
+        "password": "nonsense"
+    }
+    response = requests.post(login_url, json=payload)
+    assert response.status_code == 401, (
+        "Expected 401 Unauthorized: Got "
+        f"{response.status_code}: {response.text}"
+    )
+
 # --------------------------------------------------------------
 # Calculations Endpoints
 # --------------------------------------------------------------

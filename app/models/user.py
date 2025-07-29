@@ -253,6 +253,7 @@ class User(ModelBase):
             An Authorization token for this user
         """
         settings = GlobalSettings()
+        
         user = db.query(cls).filter(
             (cls.username == username) | (cls.email == username)
         ).first()
